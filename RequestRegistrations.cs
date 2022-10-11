@@ -39,7 +39,7 @@ namespace MCT.Function
                         List<RegistrationRequest> result = new List<RegistrationRequest>();
                         while (await reader.ReadAsync()){
                             RegistrationRequest registration = new RegistrationRequest();
-                            registration.RegistrationId = reader["RegistrationId"].ToString();
+                            registration.RegistrationId = Guid.Parse(reader["RegistrationId"].ToString());
                             registration.LastName = reader["LastName"].ToString();
                             registration.FirstName = reader["FirstName"].ToString();
                             registration.Email = reader["Email"].ToString();

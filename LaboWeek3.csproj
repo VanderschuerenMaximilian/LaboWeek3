@@ -8,6 +8,8 @@
     <!-- DEZE MOET JE TOEVOEGEN OM NAAR EEN DATABASE TE STUREN -->
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
     <PackageReference Include="Azure.Data.Tables" Version="12.6.0" />
+    <PackageReference Include="CsvHelper" Version="29.0.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.13.1" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
