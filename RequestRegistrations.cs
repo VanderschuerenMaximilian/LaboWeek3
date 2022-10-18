@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Data.SqlClient;        //zelf toegevoed
 using System.Collections.Generic;   //zelf toegevoed
 using tijdreeks_groep1.Models;
+using Azure.Identity;
 
 namespace MCT.Function
 {
@@ -22,13 +23,18 @@ namespace MCT.Function
         {
             try
             {
-                
+
                 var connectionstring = Environment.GetEnvironmentVariable("ConnectionString");
+
+                var credential = new DefaultAzureCredential();
+                var token = credential.GetToken(new Azure.Core.TokenRequestContext(new[] { "https://database.windows.net/.default" }));
+
                 var registrations = new List<RegistrationAdd>();
 
                 // om SqlConnection te laten werken moet je de libraries boven inladen als in de csproj de extra lijn toevoegen van de package
                 using (SqlConnection connection = new SqlConnection(connectionstring))
                 {
+                    connection.AccessToken = token.Token;
                     await connection.OpenAsync();
                     using (SqlCommand command = new SqlCommand())
                     {
@@ -37,7 +43,8 @@ namespace MCT.Function
 
                         SqlDataReader reader = await command.ExecuteReaderAsync();
                         List<RegistrationRequest> result = new List<RegistrationRequest>();
-                        while (await reader.ReadAsync()){
+                        while (await reader.ReadAsync())
+                        {
                             RegistrationRequest registration = new RegistrationRequest();
                             registration.RegistrationId = Guid.Parse(reader["RegistrationId"].ToString());
                             registration.LastName = reader["LastName"].ToString();
@@ -45,12 +52,12 @@ namespace MCT.Function
                             registration.Email = reader["Email"].ToString();
                             registration.ZipCode = Convert.ToInt32(reader["ZipCode"]);
                             registration.Age = Convert.ToInt32(reader["Age"]);
-                            registration.IsFirstTimer =Convert.ToBoolean(reader["IsFirstTimer"]);
+                            registration.IsFirstTimer = Convert.ToBoolean(reader["IsFirstTimer"]);
                             result.Add(registration);
-                            
+
                         }
                         return new OkObjectResult(result);    //status code 200
-                    }   
+                    }
                 }
             }
             catch (System.Exception ex)

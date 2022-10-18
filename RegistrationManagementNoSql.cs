@@ -18,6 +18,7 @@ using CsvHelper;
 using System.Globalization;
 using Azure.Storage.Blobs;
 using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 namespace MCT.Function
 {
@@ -32,8 +33,13 @@ namespace MCT.Function
             {
                 // string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
                 // string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
-                string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
 
+                //niet meer nodig door keyvault
+                //string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
+                var kvConnectionString = Environment.GetEnvironmentVariable("KeyVaultURI");
+                var secretClient = new SecretClient(new Uri(kvConnectionString), new DefaultAzureCredential());
+                var secret = secretClient.GetSecret("RegistrationTable");
+                var storageURI = secret.Value.Value;
                 //var tableClient = new TableClient(new Uri(storageURI), "registrations", new TableSharedKeyCredential(storageAccountName, storageAccountKey));
                 var tableClient = new TableClient(new Uri(storageURI), "registrations", new DefaultAzureCredential());
                 string partitionKey = "zipcode";
