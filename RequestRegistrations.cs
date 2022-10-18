@@ -11,6 +11,7 @@ using System.Data.SqlClient;        //zelf toegevoed
 using System.Collections.Generic;   //zelf toegevoed
 using tijdreeks_groep1.Models;
 using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 namespace MCT.Function
 {
@@ -24,7 +25,11 @@ namespace MCT.Function
             try
             {
 
-                var connectionstring = Environment.GetEnvironmentVariable("ConnectionString");
+                //var connectionstring = Environment.GetEnvironmentVariable("ConnectionString");
+                var kvConnectionString = Environment.GetEnvironmentVariable("KeyVaultURI");
+                var secretClient = new SecretClient(new Uri(kvConnectionString), new DefaultAzureCredential());
+                var secret = secretClient.GetSecret("ConnectionString");
+                var storageURI = secret.Value.Value;
 
                 var credential = new DefaultAzureCredential();
                 var token = credential.GetToken(new Azure.Core.TokenRequestContext(new[] { "https://database.windows.net/.default" }));
@@ -32,7 +37,7 @@ namespace MCT.Function
                 var registrations = new List<RegistrationAdd>();
 
                 // om SqlConnection te laten werken moet je de libraries boven inladen als in de csproj de extra lijn toevoegen van de package
-                using (SqlConnection connection = new SqlConnection(connectionstring))
+                using (SqlConnection connection = new SqlConnection(storageURI))
                 {
                     connection.AccessToken = token.Token;
                     await connection.OpenAsync();

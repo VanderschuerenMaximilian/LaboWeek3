@@ -87,7 +87,12 @@ namespace MCT.Function
 
                 // string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
                 // string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
-                string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
+
+                //string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
+                var kvConnectionString = Environment.GetEnvironmentVariable("KeyVaultURI");
+                var secretClient = new SecretClient(new Uri(kvConnectionString), new DefaultAzureCredential());
+                var secret = secretClient.GetSecret("RegistrationTable");
+                var storageURI = secret.Value.Value;
 
                 string partionKey = "zipcode";
                 string rowKey = reg.RegistrationId.ToString();
@@ -127,7 +132,12 @@ namespace MCT.Function
             {
                 // string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
                 // string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
-                string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
+
+                //string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
+                var kvConnectionString = Environment.GetEnvironmentVariable("KeyVaultURI");
+                var secretClient = new SecretClient(new Uri(kvConnectionString), new DefaultAzureCredential());
+                var secret = secretClient.GetSecret("BlobUrl");
+                var storageURI = secret.Value.Value;
 
                 //var tableClient = new TableClient(new Uri(storageURI), "registrations", new TableSharedKeyCredential(storageAccountName, storageAccountKey));
                 var tableClient = new TableClient(new Uri(storageURI), "registrations", new DefaultAzureCredential());
