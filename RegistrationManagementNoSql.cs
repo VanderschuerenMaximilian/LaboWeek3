@@ -107,7 +107,7 @@ namespace MCT.Function
             {
                 log.LogError(ex.Message);
                 return new StatusCodeResult(500);
-            } 
+            }
         }
 
         //----------------------------------------------------------------------------------------------------//
@@ -119,13 +119,12 @@ namespace MCT.Function
         {
             try
             {
-                //dit is op de onveilige manier!!!!
-                string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
-                string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
+                // string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
+                // string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
                 string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
 
-                var tableClient = new TableClient(new Uri(storageURI), "registrations", new TableSharedKeyCredential(storageAccountName, storageAccountKey));
-                //var tableClient = new TableClient(new Uri(storageURI), "registrations", new DefaultAzureCredential());
+                //var tableClient = new TableClient(new Uri(storageURI), "registrations", new TableSharedKeyCredential(storageAccountName, storageAccountKey));
+                var tableClient = new TableClient(new Uri(storageURI), "registrations", new DefaultAzureCredential());
                 string partitionKey = "zipcode";
                 Pageable<TableEntity> queryResultsFilter = tableClient.Query<TableEntity>(filter: $"PartitionKey eq '{partitionKey}'");
 
@@ -151,19 +150,21 @@ namespace MCT.Function
                 //we gaan de file tijdelijk opslaan locaal
                 string localFilePath = $"{Path.GetTempPath()}{localFileName}";
 
-                using(var writer = new StreamWriter(localFilePath)){
-                    using(var csv = new CsvWriter(writer, CultureInfo.InvariantCulture)){
+                using (var writer = new StreamWriter(localFilePath))
+                {
+                    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    {
                         csv.WriteRecords(result);
                     }
                 }
 
-                string blobConnectionString = Environment.GetEnvironmentVariable("BlobConnectionString");
+                string blobUrl = Environment.GetEnvironmentVariable("BlobUrl");
 
-                BlobServiceClient blobServiceClient = new BlobServiceClient(blobConnectionString);
+                BlobServiceClient blobServiceClient = new BlobServiceClient(new Uri(blobUrl), new DefaultAzureCredential());
                 BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("csv");
                 BlobClient blobClient = containerClient.GetBlobClient(localFileName);
                 await blobClient.UploadAsync(localFilePath);
-                
+
                 File.Delete(localFilePath);
 
                 return new OkObjectResult("");
