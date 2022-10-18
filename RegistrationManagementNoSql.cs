@@ -17,6 +17,7 @@ using System.Data;
 using CsvHelper;
 using System.Globalization;
 using Azure.Storage.Blobs;
+using Azure.Identity;
 
 namespace MCT.Function
 {
@@ -29,12 +30,12 @@ namespace MCT.Function
         {
             try
             {
-                string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
-                string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
+                // string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
+                // string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
                 string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
 
-                var tableClient = new TableClient(new Uri(storageURI), "registrations", new TableSharedKeyCredential(storageAccountName, storageAccountKey));
-
+                //var tableClient = new TableClient(new Uri(storageURI), "registrations", new TableSharedKeyCredential(storageAccountName, storageAccountKey));
+                var tableClient = new TableClient(new Uri(storageURI), "registrations", new DefaultAzureCredential());
                 string partitionKey = "zipcode";
                 Pageable<TableEntity> queryResultsFilter = tableClient.Query<TableEntity>(filter: $"PartitionKey eq '{partitionKey}'");
 
@@ -78,15 +79,15 @@ namespace MCT.Function
                 RegistrationAdd reg = JsonConvert.DeserializeObject<RegistrationAdd>(json);
                 reg.RegistrationId = Guid.NewGuid();
 
-                string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
-                string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
+                // string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
+                // string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
                 string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
 
                 string partionKey = "zipcode";
                 string rowKey = reg.RegistrationId.ToString();
 
-                var tableClient = new TableClient(new Uri(storageURI), "registrations", new TableSharedKeyCredential(storageAccountName, storageAccountKey));
-
+                //var tableClient = new TableClient(new Uri(storageURI), "registrations", new TableSharedKeyCredential(storageAccountName, storageAccountKey));
+                var tableClient = new TableClient(new Uri(storageURI), "registrations", new DefaultAzureCredential());
                 await tableClient.CreateIfNotExistsAsync();
 
                 var entity = new TableEntity(partionKey, rowKey){
@@ -118,12 +119,13 @@ namespace MCT.Function
         {
             try
             {
+                //dit is op de onveilige manier!!!!
                 string storageAccountName = Environment.GetEnvironmentVariable("StorageAccountName");
                 string storageAccountKey = Environment.GetEnvironmentVariable("StorageAccountKey");
                 string storageURI = Environment.GetEnvironmentVariable("RegistrationTable");
 
                 var tableClient = new TableClient(new Uri(storageURI), "registrations", new TableSharedKeyCredential(storageAccountName, storageAccountKey));
-
+                //var tableClient = new TableClient(new Uri(storageURI), "registrations", new DefaultAzureCredential());
                 string partitionKey = "zipcode";
                 Pageable<TableEntity> queryResultsFilter = tableClient.Query<TableEntity>(filter: $"PartitionKey eq '{partitionKey}'");
 
